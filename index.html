@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,14 +15,13 @@
 </head>
 <body>
   <h1>HKDSE English Writing AI</h1>
-  <p>Instantly generate Band 5 / 5* / 5** level compositions using AI. Includes argumentative essays + examiner feedback!</p>
+  <p>Generate Band 5 / 5* / 5** DSE-level writing and examiner feedback with scores.</p>
 
   <label for="type">Writing Type</label>
   <select id="type">
     <option value="blog">Blog</option>
     <option value="speech">Speech</option>
     <option value="letter">Letter to the Editor</option>
-    <option value="letter">Formal Letter</option>
     <option value="proposal">Proposal</option>
     <option value="article">Article</option>
     <option value="one-sided argumentative essay">One-sided Argumentative Essay</option>
@@ -45,10 +45,9 @@
 
   <label for="comment">Examiner Feedback</label>
   <pre id="comment">AI-generated comment based on DSE Paper 2 rubrics will appear here...</pre>
-  
-<label for="scorebox">Score Breakdown</label>
-<pre id="scorebox">C   L   O
--   -   -
+
+  <label for="scorebox">Score Breakdown</label>
+  <pre id="scorebox">C   L   O
 1st marker: -
 2nd marker: -</pre>
 
@@ -60,9 +59,11 @@
 
       const output = document.getElementById("output");
       const comment = document.getElementById("comment");
+      const scorebox = document.getElementById("scorebox");
 
       output.innerText = "Generating writing...";
       comment.innerText = "Generating examiner feedback...";
+      scorebox.innerText = "C   L   O\n1st marker: -\n2nd marker: -";
 
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -70,18 +71,21 @@
         body: JSON.stringify({ topic, type, level })
       });
 
+      if (!response.ok) {
+        output.innerText = "⚠️ API Error. Please check server logs.";
+        comment.innerText = "";
+        return;
+      }
+
       const data = await response.json();
       output.innerText = data.writing || "⚠️ No writing generated.";
       comment.innerText = data.comment || "⚠️ No feedback received.";
 
-// Extract score box from comment if formatted
-const scoreMatch = data.comment?.match(/C\s+L\s+O[\s\S]+?(1st marker.*?\d+\s+\d+\s+\d+)[\s\S]+?(2nd marker.*?\d+\s+\d+\s+\d+)/i);
-
-if (scoreMatch) {
-  document.getElementById("scorebox").innerText =
-    "C   L   O\n" + scoreMatch[1] + "\n" + scoreMatch[2];
-}
-
+      const scoreMatch = data.comment?.match(/C\s+L\s+O[\s\S]+?(1st marker.*?\d+\s+\d+\s+\d+)[\s\S]+?(2nd marker.*?\d+\s+\d+\s+\d+)/i);
+      if (scoreMatch) {
+        scorebox.innerText = "C   L   O\n" + scoreMatch[1] + "\n" + scoreMatch[2];
+      }
+    }
   </script>
 </body>
 </html>
