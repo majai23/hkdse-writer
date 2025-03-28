@@ -1,15 +1,44 @@
 export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
-  const prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". The response should reflect the qualities of a Level ${level} candidate according to the HKDSE English writing rubrics.
+  let prompt = "";
+
+if (level === "5") {
+  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a Level 5 performance based on HKDSE rubrics.
 
 Instructions:
-- Use a clear and appropriate structure for the text type
-- Maintain a relevant, focused, and well-developed response
-- Use vocabulary and sentence structures suitable for a Level ${level} performance
-- Demonstrate language accuracy with appropriate tone and style
+- Use appropriate structure for the text type
+- Express clear ideas but allow for some minor weaknesses
+- Use a moderately varied vocabulary and sentence structure
+- Some minor errors in grammar or tone are acceptable
+- Maintain a relevant and mostly focused response
+`;
+}
 
-Make sure the writing is realistic and reflective of actual student responses at this level.`;
+else if (level === "5*") {
+  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a Level 5* performance based on HKDSE rubrics.
+
+Instructions:
+- Use a clear and logical structure appropriate for the text type
+- Present ideas with clarity and development
+- Use a wide range of vocabulary and sentence types
+- Language should be mostly accurate with a suitable tone
+- Response should be well-organized and mostly error-free
+`;
+}
+
+else if (level === "5**") {
+  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a top-level 5** performance based on HKDSE rubrics.
+
+Instructions:
+- Use an advanced structure with smooth transitions
+- Express complex, insightful ideas with clarity and impact
+- Use sophisticated vocabulary and precise language
+- Be almost entirely error-free with excellent tone control
+- Make the writing stand out with originality and flair
+`;
+}
+;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
