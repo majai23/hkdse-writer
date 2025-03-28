@@ -81,11 +81,23 @@ Your goal is to produce a realistic, polished DSE-style writing that would be aw
     const writingData = await writingRes.json();
     const writing = writingData.choices?.[0]?.message?.content || "";
 
-    const feedbackPrompt = `You are an HKDSE English Paper 2 examiner. Evaluate the following student writing using the official Paper 2 rubrics. Give specific comments on:
-1. Content
-2. Language
-3. Organisation
-Then estimate the band level (5 / 5* / 5**).
+   const feedbackPrompt = `You are an HKDSE English Paper 2 examiner. Assess the following writing as if it were submitted by a Level ${level} candidate.
+
+Provide scores and brief comments under the DSE criteria:
+- C = Content
+- L = Language
+- O = Organisation
+
+Instructions:
+- Give marks from 1 to 7 for each category
+- Include marks from two markers: 1st marker and 2nd marker
+- Base your scoring realistically on the student's writing
+- Justify the scores briefly in 2–3 sentences below
+
+Format the score table like this:
+   C   L   O
+1st marker 6 7 7
+2nd marker 5 6 6
 
 Writing:
 ${writing}`;
