@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>HKDSE AI Writing Tool</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
     label { display: block; margin-top: 20px; font-weight: bold; }
     select, input, button, pre { width: 100%; padding: 10px; margin-top: 5px; }
     button { background-color: #1e40af; color: white; border: none; cursor: pointer; }
@@ -15,7 +14,7 @@
 </head>
 <body>
   <h1>HKDSE English Writing AI</h1>
-  <p>Instantly generate Band 5 / 5* / 5** level compositions using AI.</p>
+  <p>Instantly generate Band 5 / 5* / 5** level compositions using AI. Includes argumentative essays + examiner feedback!</p>
 
   <label for="type">Writing Type</label>
   <select id="type">
@@ -24,6 +23,8 @@
     <option value="letter">Letter to the Editor</option>
     <option value="proposal">Proposal</option>
     <option value="article">Article</option>
+    <option value="one-sided argumentative essay">One-sided Argumentative Essay</option>
+    <option value="two-sided argumentative essay">Two-sided Argumentative Essay</option>
   </select>
 
   <label for="level">Target Band</label>
@@ -34,40 +35,37 @@
   </select>
 
   <label for="topic">Topic</label>
-  <input type="text" id="topic" placeholder="e.g. How to manage exam stress" />
+  <input type="text" id="topic" placeholder="e.g. Should school uniforms be mandatory?" />
 
   <button onclick="generateWriting()">Generate Writing</button>
 
   <label for="output">Generated Writing</label>
   <pre id="output">Your AI writing will appear here...</pre>
 
+  <label for="comment">Examiner Feedback</label>
+  <pre id="comment">AI-generated comment based on DSE Paper 2 rubrics will appear here...</pre>
+
   <script>
     async function generateWriting() {
       const topic = document.getElementById("topic").value;
       const type = document.getElementById("type").value;
       const level = document.getElementById("level").value;
+
       const output = document.getElementById("output");
+      const comment = document.getElementById("comment");
 
-      const prompt = `You are an HKDSE English writing examiner. Write a Level ${level} ${type} on the topic: "${topic}". Use rich vocabulary, clear structure, and vivid examples.`;
+      output.innerText = "Generating writing...";
+      comment.innerText = "Generating examiner feedback...";
 
-      const response = await fetch("https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview", {
+      const response = await fetch("/api/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": "Eorc0y5B8Mc5hgWlMB6mJsjitFoLFwcfqvDboT3GXu3vNGi9X7tTJQQJ99BCACYeBjFXJ3w3AAABACOGW5j8"
-        },
-        body: JSON.stringify({
-          messages: [
-            { role: "system", content: "You are an HKDSE English writing examiner." },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 800
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, type, level })
       });
 
       const data = await response.json();
-      output.innerText = data.choices?.[0]?.message?.content || "⚠️ No response received.";
+      output.innerText = data.writing || "⚠️ No writing generated.";
+      comment.innerText = data.comment || "⚠️ No feedback received.";
     }
   </script>
 </body>
