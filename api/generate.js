@@ -1,7 +1,15 @@
 export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
-  const prompt = `You are an HKDSE English writing examiner. Write a Level ${level} ${type} on the topic: "${topic}". Use rich vocabulary, clear structure, and vivid examples.`;
+  const prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". The response should reflect the qualities of a Level ${level} candidate according to the HKDSE English writing rubrics.
+
+Instructions:
+- Use a clear and appropriate structure for the text type
+- Maintain a relevant, focused, and well-developed response
+- Use vocabulary and sentence structures suitable for a Level ${level} performance
+- Demonstrate language accuracy with appropriate tone and style
+
+Make sure the writing is realistic and reflective of actual student responses at this level.`;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
