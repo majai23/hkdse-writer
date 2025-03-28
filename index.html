@@ -75,7 +75,7 @@
       comment.innerText = data.comment || "⚠️ No feedback received.";
 
 // Extract score box from comment if formatted
-const scoreMatch = data.comment?.match(/C\\s+L\\s+O[\\s\\S]+?(1st marker.+?\\d+\\s+\\d+\\s+\\d+)[\\s\\S]+?(2nd marker.+?\\d+\\s+\\d+\\s+\\d+)/i);
+const scoreMatch = data.comment?.match(/C\s+L\s+O[\s\S]+?(1st marker.*?\d+\s+\d+\s+\d+)[\s\S]+?(2nd marker.*?\d+\s+\d+\s+\d+)/i);
 
 if (scoreMatch) {
   document.getElementById("scorebox").innerText =
