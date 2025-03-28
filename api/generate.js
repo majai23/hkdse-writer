@@ -89,6 +89,13 @@ Format the score table like this:
 1st marker 6 7 7
 2nd marker 5 6 6
 
+Show the banding of the student after summing up the score above like this:
+score around 38 = level 5**
+score around 34 = level 5*
+score around 30 = level 5
+
+Show comments for each criteria as well
+
 Writing:
 ${writing}`;
 
