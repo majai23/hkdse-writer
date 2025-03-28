@@ -4,41 +4,57 @@ export default async function handler(req, res) {
   let prompt = "";
 
 if (level === "5") {
-  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a Level 5 performance based on HKDSE rubrics.
+  prompt = `You are simulating a Level 5 HKDSE English Paper 2 student.
 
-Instructions:
-- Use appropriate structure for the text type
-- Express clear ideas but allow for some minor weaknesses
-- Use a moderately varied vocabulary and sentence structure
-- Some minor errors in grammar or tone are acceptable
-- Maintain a relevant and mostly focused response
-`;
+Task:
+Write a ${type} on the topic: "${topic}" in the style of a solid Level 5 candidate.
+
+Requirements:
+- Follow the format and tone of the text type (e.g. letter, blog, proposal)
+- Present clear ideas but allow for occasional lapses in development or coherence
+- Use appropriate but limited vocabulary and sentence variety
+- Include some minor errors or awkward phrasing that are realistic for Level 5
+- Try to build a persuasive or informative tone, but avoid being too perfect or native-like
+- Word count: around 600–750 words
+
+Your goal is to reflect the competence of a strong student who meets Level 5 performance in clarity, structure, and language.`;
 }
 
 else if (level === "5*") {
-  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a Level 5* performance based on HKDSE rubrics.
+  prompt = `You are simulating a Level 5* HKDSE English Paper 2 student.
 
-Instructions:
-- Use a clear and logical structure appropriate for the text type
-- Present ideas with clarity and development
-- Use a wide range of vocabulary and sentence types
-- Language should be mostly accurate with a suitable tone
-- Response should be well-organized and mostly error-free
-`;
+Task:
+Write a ${type} on the topic: "${topic}" in the style of a strong Level 5* candidate.
+
+Requirements:
+- Use the correct format and style for the text type
+- Present ideas clearly and logically with well-structured paragraphs
+- Use a range of vocabulary and sentence types, but not native-speaker level
+- Maintain formal tone and appropriate register throughout
+- Some minor grammatical errors or phrasing may appear (to feel natural)
+- Include rhetorical questions, transitions, and topic sentences
+- Word count: around 650–800 words
+
+Your response should reflect a highly competent but realistic HKDSE student.`;
 }
 
 else if (level === "5**") {
-  prompt = `You are an HKDSE English Paper 2 examiner. Write a ${type} on the topic: "${topic}". This writing should reflect a top-level 5** performance based on HKDSE rubrics.
+  prompt = `You are simulating a Level 5** HKDSE English Paper 2 student.
 
-Instructions:
-- Use an advanced structure with smooth transitions
-- Express complex, insightful ideas with clarity and impact
-- Use sophisticated vocabulary and precise language
-- Be almost entirely error-free with excellent tone control
-- Make the writing stand out with originality and flair
-`;
+Task:
+Write a ${type} on the topic: "${topic}" in the style of a top-performing Level 5** candidate.
+
+Requirements:
+- Follow the correct format and tone for the text type
+- Present mature and well-developed arguments or ideas
+- Use advanced but realistic student-level vocabulary and sentence structures
+- Include rhetorical techniques: repetition, emotive language, parallel structure, etc.
+- Avoid sounding like a native speaker — keep it local and authentic
+- Structure should be smooth with clear progression of ideas
+- Word count: 700–850 words
+
+Your goal is to produce a realistic, polished DSE-style writing that would be awarded Level 5** in a real exam.`;
 }
-;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
