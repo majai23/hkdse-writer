@@ -93,30 +93,25 @@ Requirements:
     const writingData = await writingRes.json();
     const writing = writingData.choices?.[0]?.message?.content || "";
 
-    const feedbackPrompt = `You are an HKDSE English Paper 2 examiner. Assess the following writing as if it were submitted by a Level ${level} candidate.
+    const feedbackPrompt = `The following writing was generated to simulate a Level ${level} candidate's performance. Do not grade it lower or higher — simply provide matching scores and comments as if two markers are giving feedback on a Level ${level} performance.
 
-Provide scores and brief comments under the DSE criteria:
+Score and comment under these categories:
 - C = Content
 - L = Language
 - O = Organisation
 
 Instructions:
-- Give marks from 1 to 7 for each category
-- Include marks from two markers: 1st marker (less strict) and 2nd marker (stricter)
-- Base your scoring realistically on the student's writing
-- Justify the scores briefly in 2–3 sentences below
-
-Format the score table like this:
+- Give realistic Level ${level} scores from two markers
+- Use this format:
    C   L   O
-1st marker 6 7 7
-2nd marker 5 6 6
-
-Show the banding of the student after summing up the score above like this:
+1st marker 6 6 6
+2nd marker 6 6 6
+- Follow with 2–3 sentences of feedback for each criteria
+- Do NOT judge it lower than Level ${level} — your task is to simulate an examiner's notes for that band level
+- Show the banding of the student after summing up the score above like this:
 total score given by both is within 38-42 = it is level 5**
 total score given by both is within 34-37 = it is level 5*
 total score given by both is within 30-33 = it is level 5
-
-Show comments for each criteria as well
 
 Writing:
 ${writing}`;
