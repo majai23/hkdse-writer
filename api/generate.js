@@ -55,7 +55,8 @@ Requirements:
 
 Your goal is to produce a realistic, polished DSE-style writing that would be awarded Level 5** in a real exam.`;
 }
-
+;
+  
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
   const headers = {
