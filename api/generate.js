@@ -16,7 +16,11 @@ Requirements:
 - Use appropriate but limited vocabulary and sentence variety
 - Include some minor errors or awkward phrasing that are realistic for Level 5
 - Try to build a persuasive or informative tone, but avoid being too perfect or native-like
-- Word count: around 600–750 words`;
+- Word count: around 600–750 words`
+- Content Marks around 5-6
+- Language Marks around 5-6
+- Organization Marks around 5-6
+- Total marks for 1 single marker within 15-18;
   } else if (level === "5*") {
     prompt = `You are simulating a Level 5* HKDSE English Paper 2 student.
 
@@ -30,7 +34,11 @@ Requirements:
 - Maintain formal tone and appropriate register throughout
 - Some minor grammatical errors or phrasing may appear (to feel natural)
 - Include rhetorical questions, transitions, and topic sentences
-- Word count: around 650–800 words`;
+- Word count: around 650–800 words`
+- Content Marks around 6-7
+- Language Marks around 6-7
+- Organization Marks around 6-7
+- Total marks for 1 single marker within 18-20;
   } else if (level === "5**") {
     prompt = `You are simulating a Level 5** HKDSE English Paper 2 student.
 
@@ -44,7 +52,11 @@ Requirements:
 - Include rhetorical techniques: repetition, emotive language, parallel structure, etc.
 - Avoid sounding like a native speaker — keep it local and authentic
 - Structure should be smooth with clear progression of ideas
-- Word count: 700–850 words`;
+- Word count: 700–850 words`
+- Content Marks mostly 7
+- Language Marks mostly 6-7
+- Organization Marks mostly 6-7
+- Total marks for 1 single marker at least 20;
   }
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
