@@ -108,10 +108,6 @@ Instructions:
 2nd marker 6 6 6
 - Follow with 2–3 sentences of feedback for each criteria
 - Do NOT judge it lower than Level ${level} — your task is to simulate an examiner's notes for that band level
-- Show the banding of the student after summing up the score above like this:
-total score given by both is within 38-42 = it is level 5**
-total score given by both is within 34-37 = it is level 5*
-total score given by both is within 30-33 = it is level 5
 
 Writing:
 ${writing}`;
