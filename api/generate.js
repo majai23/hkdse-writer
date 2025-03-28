@@ -1,22 +1,7 @@
+
 export default async function handler(req, res) {
   const { topic, type, level, prompt } = req.body;
 
-  let prompt = "";
-
-if (level === "5") {
-  prompt = `You are simulating a Level 5 HKDSE English Paper 2 student.
-Task: Write a ${type} on the topic: "${topic}" in the style of a solid Level 5 candidate.
-Requirements: [...]`;
-} else if (level === "5*") {
-  prompt = `You are simulating a Level 5* HKDSE English Paper 2 student.
-Task: Write a ${type} on the topic: "${topic}" in the style of a strong Level 5* candidate.
-Requirements: [...]`;
-} else if (level === "5**") {
-  prompt = `You are simulating a Level 5** HKDSE English Paper 2 student.
-Task: Write a ${type} on the topic: "${topic}" in the style of a top-performing Level 5** candidate.
-Requirements: [...]`;
-}
-  
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
   const headers = {
@@ -25,6 +10,7 @@ Requirements: [...]`;
   };
 
   try {
+    // First API call: Generate the writing
     const writingRes = await fetch(openaiUrl, {
       method: "POST",
       headers,
@@ -41,7 +27,8 @@ Requirements: [...]`;
     const writingData = await writingRes.json();
     const writing = writingData.choices?.[0]?.message?.content || "";
 
-   const feedbackPrompt = `You are an HKDSE English Paper 2 examiner. Assess the following writing as if it were submitted by a Level ${level} candidate.
+    // Second API call: Generate examiner feedback
+    const feedbackPrompt = `You are an HKDSE English Paper 2 examiner. Assess the following writing as if it were submitted by a Level ${level} candidate.
 
 Provide scores and brief comments under the DSE criteria:
 - C = Content
@@ -84,3 +71,4 @@ ${writing}`;
     res.status(500).json({ error: "Failed to generate writing or feedback." });
   }
 }
+
