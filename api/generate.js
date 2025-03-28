@@ -101,13 +101,18 @@ Score and comment under these categories:
 - O = Organisation
 
 Instructions:
-- Give realistic Level ${level} scores from two markers
+- Give realistic Level ${level} scores from two markers, one stricter and the other more lenient
 - Use this format:
    C   L   O
 1st marker 6 6 6
 2nd marker 6 6 6
+Total: 36/42
+Level: 5*
+
+- Total marks from 30 to 34 attain level 5, total marks from 35 to 38 attain level 5*, total marks from 39 - 42 attain level 5**
 - Follow with 2–3 sentences of feedback for each criteria
 - Do NOT judge it lower than Level ${level} — your task is to simulate an examiner's notes for that band level
+
 
 Writing:
 ${writing}`;
