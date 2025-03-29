@@ -2,47 +2,51 @@
 export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
+  let wordLimit = "700–850";
+  if (level === "5") wordLimit = "600–750";
+  if (level === "5*") wordLimit = "650–800";
+
   let prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
 
 Task:
 Write a ${type} on the topic: "${topic}" in the style of a Level ${level} candidate.
 
 Important:
-- The structure and tone must match the ${type} text type format exactly.
-- Use phrases and features that are typical of a ${type}. Do not use formats from other genres.
-- Use the style and features commonly seen in DSE Paper 2 ${type}s.
-`;
+- The structure and tone must match the ${type} text type exactly.
+- Use features and format typical of that text type — do not mix with others.
+- Do NOT begin with greetings unless it's appropriate for that text type.
+- The writing must be between ${wordLimit} words (excluding punctuation). If you exceed the limit, truncate at the last full sentence. Do NOT write fewer than the lower limit.
+
+Performance expectations:`;
+
 
   if (level === "5") {
     prompt += `
-Performance characteristics:
-- Follow the correct ${type} structure
-- Use clear but not sophisticated vocabulary or grammar
-- Slightly inconsistent ideas or tone allowed
-- Language score should reflect Level 5
-- Word count: 600–750
-- End with: Word count: ___ words
-`;
+- Format and tone: mostly appropriate but some inconsistency allowed
+- Vocabulary: appropriate but limited; some awkward phrasing is acceptable
+- Grammar: mostly accurate with some basic errors
+- Organisation: clear structure with uneven development allowed
+- Style: simple and realistic
+- Word count: 600–750 (excluding punctuation)
+- End with: Word count: ___ words`;
   } else if (level === "5*") {
     prompt += `
-Performance characteristics:
-- Strong structure, coherence and tone suitable for ${type}
-- Vocabulary and grammar are controlled and effective
-- Few minor errors acceptable
-- Reflects realistic DSE 5* student
-- Word count: 650–800
-- End with: Word count: ___ words
-`;
+- Format and tone: consistent and appropriate to the text type
+- Vocabulary: moderately rich, correct word choice
+- Grammar: largely accurate with minor lapses
+- Organisation: clear and logical structure
+- Style: competent and fluent
+- Word count: 650–800 (excluding punctuation)
+- End with: Word count: ___ words`;
   } else if (level === "5**") {
     prompt += `
-Performance characteristics:
-- Excellent structure, very fluent ${type} language use
-- Sophisticated phrasing, rhetorical techniques and flow
-- Almost error-free
-- Clearly demonstrates a Level 5** DSE student
-- Word count: 700–850
-- End with: Word count: ___ words
-`;
+- Format and tone: accurate and effective for the text type
+- Vocabulary: wide and sophisticated, with rhetorical techniques
+- Grammar: highly accurate, almost no errors
+- Organisation: smooth, coherent and well-developed
+- Style: confident, varied, mature
+- Word count: 700–850 (excluding punctuation)
+- End with: Word count: ___ words`;
   }
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
@@ -69,14 +73,24 @@ Performance characteristics:
     const writingData = await writingRes.json();
     const writing = writingData.choices?.[0]?.message?.content || "";
 
-    const feedbackPrompt = `You are a DSE English Paper 2 examiner. The following writing was written to simulate a Level ${level} student.
+    const feedbackPrompt = `You are a DSE English Paper 2 examiner.
 
-Do NOT re-grade it. Instead, write a detail examiner-style comment explaining why this writing matches Level ${level}, using 2-3 paragraphs and providing concrete examples extracted from the passage for each criterion:
-- Content
-- Language
-- Organisation
+The following writing was generated to simulate a Level ${level} student's performance. Your task is NOT to give a score, but to justify why the writing matches this level in a fixed format.
 
-Be honest but stay within the expected level. Provide possible marks if a real examiner marked the generated work using the following format:
+Provide comments in this format:
+---
+Content:
+[4-5 sentences about the content with concrete examples]
+
+Language:
+[4–5 sentences about vocabulary, grammar, phrasing with concrete examples]
+
+Organisation:
+[4–5 sentences about structure and coherence with concrete examples]
+---
+
+Do not comment on score. Do not mention other levels. Stay within the chosen band.
+Provide possible marks if a real examiner marked the generated work using the following format:
    C   L   O
 1st marker 6 6 6
 2nd marker 6 6 6
