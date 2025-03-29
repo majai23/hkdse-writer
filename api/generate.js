@@ -2,72 +2,48 @@
 export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
-  let prompt = "";
+  let prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
+
+Task:
+Write a ${type} on the topic: "${topic}" in the style of a Level ${level} candidate.
+
+Important:
+- The structure and tone must match the ${type} text type format exactly.
+- Use phrases and features that are typical of a ${type}. Do not use formats from other genres.
+- Use the style and features commonly seen in DSE Paper 2 ${type}s.
+`;
 
   if (level === "5") {
-    prompt = `You are simulating a Level 5 HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a solid Level 5 candidate.
-
-Requirements:
-- Follow the format and tone of the text type (e.g. letter, blog, proposal)
-- Present clear ideas but allow for occasional lapses in development or coherence
-- Use appropriate but limited vocabulary and sentence variety
-- Include some minor errors or awkward phrasing that are realistic for Level 5
-- Try to build a persuasive or informative tone, but avoid being too perfect or native-like
-- It must be a level 5 piece
-- The content marks of the writing are around 5-6
-- The language marks of the writing are  around 5-6
-- The organization marks of the writing are  around 5-6
-- Total marks for 1 single marker within 15-18
-- The marks tak reference from the DSE Paper 2 marking rubrics
-- Words required: at least 600 words; at most 750 words
-- Show the numebr of words after generating the writing`;}
-  
-  else if (level === "5*") {
-    prompt = `You are simulating a Level 5* HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a strong Level 5* candidate.
-
-Requirements:
-- Use the correct format and style for the text type
-- Present ideas clearly and logically with well-structured paragraphs
-- Use a range of vocabulary and sentence types, but not native-speaker level
-- Maintain formal tone and appropriate register throughout
-- Some minor grammatical errors or phrasing may appear (to feel natural)
-- Include rhetorical questions, transitions, and topic sentences
-- It must be a level 5* piece
-- The content marks of the writing are around 6-7
-- The language marks of the writing are  around 6-7
-- The organization marks of the writing are  around 6-7
-- Total marks for 1 single marker within 18-20
-- The marks tak reference from the DSE Paper 2 marking rubrics
-- Words required: at least 650 words; at most 800 words
-- Show the numebr of words after generating the writing`;}
-  
-  else if (level === "5**") {
-    prompt = `You are simulating a Level 5** HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a top-performing Level 5** candidate.
-
-Requirements:
-- Follow the correct format and tone for the text type
-- Present mature and well-developed arguments or ideas
-- Use advanced but realistic student-level vocabulary and sentence structures
-- Include rhetorical techniques: repetition, emotive language, parallel structure, etc.
-- Avoid sounding like a native speaker — keep it local and authentic
-- Structure should be smooth with clear progression of ideas
-- It must be a level 5** piece
-- The content marks of the writing are mostly 7
-- The language marks of the writing are mostly 7
-- The organization marks of the writing are mostly 7
-- Total marks for 1 single marker are at least 20
-- The marks tak reference from the DSE Paper 2 marking rubrics- Total marks for 1 single marker at least 20
-- Words required: at least 750 words; at most 850 words
-- Show the numebr of words after generating the writing`;}
+    prompt += `
+Performance characteristics:
+- Follow the correct ${type} structure
+- Use clear but not sophisticated vocabulary or grammar
+- Slightly inconsistent ideas or tone allowed
+- Language score should reflect Level 5
+- Word count: 600–750
+- End with: Word count: ___ words
+`;
+  } else if (level === "5*") {
+    prompt += `
+Performance characteristics:
+- Strong structure, coherence and tone suitable for ${type}
+- Vocabulary and grammar are controlled and effective
+- Few minor errors acceptable
+- Reflects realistic DSE 5* student
+- Word count: 650–800
+- End with: Word count: ___ words
+`;
+  } else if (level === "5**") {
+    prompt += `
+Performance characteristics:
+- Excellent structure, very fluent ${type} language use
+- Sophisticated phrasing, rhetorical techniques and flow
+- Almost error-free
+- Clearly demonstrates a Level 5** DSE student
+- Word count: 700–850
+- End with: Word count: ___ words
+`;
+  }
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
 
@@ -86,32 +62,26 @@ Requirements:
           { role: "user", content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 800
+        max_tokens: 1000
       })
     });
 
     const writingData = await writingRes.json();
     const writing = writingData.choices?.[0]?.message?.content || "";
 
-    const feedbackPrompt = `The following writing was generated to simulate a Level ${level} candidate's performance. Do not grade it lower or higher — simply provide matching scores and comments as if two markers are giving feedback on a Level ${level} performance.
+    const feedbackPrompt = `You are a DSE English Paper 2 examiner. The following writing was written to simulate a Level ${level} student.
 
-Score and comment under these categories:
-- C = Content
-- L = Language
-- O = Organisation
+Do NOT re-grade it. Instead, write a detail examiner-style comment explaining why this writing matches Level ${level}, using 2-3 paragraphs and providing concrete examples extracted from the passage for each criterion:
+- Content
+- Language
+- Organisation
 
-Instructions:
-- Give realistic Level ${level} scores from two markers, one stricter and the other more lenient
-- Use this format:
+Be honest but stay within the expected level. Provide possible marks if a real examiner marked the generated work using the following format:
    C   L   O
 1st marker 6 6 6
 2nd marker 6 6 6
-Total: 36/42
-Level: 5*
 
-- Total marks from 30 to 34 attain level 5, total marks from 35 to 38 attain level 5*, total marks from 39 - 42 attain level 5**
-- Follow with 2–3 sentences of feedback for each criteria
-- Do NOT judge it lower than Level ${level} — your task is to simulate an examiner's notes for that band level
+The 1st marker is always a stricter one while the 2nd marker is always more leniet.
 
 
 Writing:
