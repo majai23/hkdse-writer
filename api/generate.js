@@ -1,5 +1,5 @@
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   let wordLimit = "700–850";
@@ -17,46 +17,46 @@ export default async function handler(req, res) {
     maxWords = 800;
   }
 
-  let prompt = \`You are simulating a Level \${level} HKDSE English Paper 2 student.
+  let prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
 
 Task:
-Write a \${type} on the topic: "\${topic}" in the style of a Level \${level} candidate.
+Write a ${type} on the topic: "${topic}" in the style of a Level ${level} candidate.
 
 Important:
-- The structure and tone must match the \${type} text type exactly.
+- The structure and tone must match the ${type} text type exactly.
 - Use features and format typical of that text type — do not mix with others.
 - Do NOT begin with greetings unless it's appropriate for that text type.
-- The writing must be between \${wordLimit} words (excluding punctuation). If you exceed the limit, truncate at the last full sentence. Do NOT write fewer than the lower limit.
+- The writing must be between ${wordLimit} words (excluding punctuation). If you exceed the limit, truncate at the last full sentence. Do NOT write fewer than the lower limit.
 
-Performance expectations:\`;
+Performance expectations:`;
 
   if (level === "5") {
-    prompt += \`
+    prompt += `
 - Format and tone: mostly appropriate but some inconsistency allowed
 - Vocabulary: appropriate but limited; some awkward phrasing is acceptable
 - Grammar: mostly accurate with some basic errors
 - Organisation: clear structure with uneven development allowed
 - Style: simple and realistic
 - Word count: 600–750 (excluding punctuation)
-- End with: Word count: ___ words\`;
+- End with: Word count: ___ words`;
   } else if (level === "5*") {
-    prompt += \`
+    prompt += `
 - Format and tone: consistent and appropriate to the text type
 - Vocabulary: moderately rich, correct word choice
 - Grammar: largely accurate with minor lapses
 - Organisation: clear and logical structure
 - Style: competent and fluent
 - Word count: 650–800 (excluding punctuation)
-- End with: Word count: ___ words\`;
+- End with: Word count: ___ words`;
   } else if (level === "5**") {
-    prompt += \`
+    prompt += `
 - Format and tone: accurate and effective for the text type
 - Vocabulary: wide and sophisticated, with rhetorical techniques
 - Grammar: highly accurate, almost no errors
 - Organisation: smooth, coherent and well-developed
 - Style: confident, varied, mature
 - Word count: 700–850 (excluding punctuation)
-- End with: Word count: ___ words\`;
+- End with: Word count: ___ words`;
   }
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
@@ -83,19 +83,17 @@ Performance expectations:\`;
     const writingData = await writingRes.json();
     let writing = writingData.choices?.[0]?.message?.content || "";
 
-    // Remove any AI-estimated word count first
     writing = writing.replace(/Word count:\s*\d+\s*words?/i, "").trim();
 
-    // Count words excluding punctuation
     const cleanText = writing.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]"']/g, "").replace(/\s{2,}/g, " ");
     const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
 
-    // Append correct word count
     writing += `\n\nWord count: \${wordCount} words`;
 
-    const feedbackPrompt = \`You are a DSE English Paper 2 examiner.
+    const feedbackPrompt = `You are a DSE English Paper 2 examiner.
 
-The following writing was generated to simulate a Level \${level} student's performance. Your task is NOT to give a score, but to justify why the writing matches this level in a fixed format.
+The following writing was generated to simulate a Level ${level} student's performance. Your task is NOT to give a score, but to justify why the writing matches this level in a fixed format.
+
 
 Provide comments in this format:
 ---
@@ -115,8 +113,9 @@ Stay within the chosen band and provide possible marks as if a real examiner mar
 2nd marker 6 6 6
 
 The 1st marker is always a stricter one while the 2nd marker is always more leniet.
+
 Writing:
-\${writing}\`;
+${writing}`;
 
     const feedbackRes = await fetch(openaiUrl, {
       method: "POST",
@@ -136,7 +135,7 @@ Writing:
 
     res.status(200).json({ writing, comment });
   } catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({ error: "Failed to generate writing or feedback." });
+    console.error("FULL API ERROR:", JSON.stringify(err, null, 2));
+    res.status(500).json({ error: "Failed to generate writing or feedback.", details: err.message || err });
   }
 }
