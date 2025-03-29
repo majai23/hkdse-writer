@@ -1,4 +1,6 @@
 
+const fetch = require("node-fetch");
+
 module.exports = async function handler(req, res) {
   const { topic, type, level } = req.body;
 
@@ -10,90 +12,110 @@ module.exports = async function handler(req, res) {
     wordLimit = "600–750";
     minWords = 600;
     maxWords = 750;
-  }
-  if (level === "5*") {
+  } else if (level === "5*") {
     wordLimit = "650–800";
     minWords = 650;
     maxWords = 800;
   }
 
-  let prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
+  const openaiUrl =
+    "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
+
+  const headers = {
+    "Content-Type": "application/json",
+    "api-key": process.env.AZURE_OPENAI_KEY,
+  };
+
+  async function generateWritingPrompt() {
+    let prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
 
 Task:
 Write a ${type} on the topic: "${topic}" in the style of a Level ${level} candidate.
 
 Important:
-- The structure and tone must match the ${type} text type exactly.
-- Use features and format typical of that text type — do not mix with others.
-- Do NOT begin with greetings unless it's appropriate for that text type.
+- The structure and tone must match the ${type} format exactly.
+- Use features typical of that genre — do not mix with others.
+- Do NOT begin with greetings unless appropriate.
 - The writing must be between ${wordLimit} words (excluding punctuation). If you exceed the limit, truncate at the last full sentence. Do NOT write fewer than the lower limit.
 
 Performance expectations:`;
 
-  if (level === "5") {
-    prompt += `
-- Format and tone: mostly appropriate but some inconsistency allowed
-- Vocabulary: appropriate but limited; some awkward phrasing is acceptable
-- Grammar: mostly accurate with some basic errors
-- Organisation: clear structure with uneven development allowed
-- Style: simple and realistic
-- Word count: 600–750 (excluding punctuation)
-- End with: Word count: ___ words`;
-  } else if (level === "5*") {
-    prompt += `
-- Format and tone: consistent and appropriate to the text type
-- Vocabulary: moderately rich, correct word choice
-- Grammar: largely accurate with minor lapses
-- Organisation: clear and logical structure
-- Style: competent and fluent
-- Word count: 650–800 (excluding punctuation)
-- End with: Word count: ___ words`;
-  } else if (level === "5**") {
-    prompt += `
-- Format and tone: accurate and effective for the text type
-- Vocabulary: wide and sophisticated, with rhetorical techniques
-- Grammar: highly accurate, almost no errors
-- Organisation: smooth, coherent and well-developed
-- Style: confident, varied, mature
-- Word count: 700–850 (excluding punctuation)
-- End with: Word count: ___ words`;
+    if (level === "5") {
+      prompt += `
+- Mostly appropriate format with some inconsistency allowed
+- Vocabulary is appropriate but limited
+- Minor grammar errors acceptable
+- Clear structure, possibly uneven development
+- Word count: 600–750 (excluding punctuation)`;
+    } else if (level === "5*") {
+      prompt += `
+- Consistent format and logical structure
+- Moderately rich vocabulary
+- Largely accurate grammar
+- Style is competent and fluent
+- Word count: 650–800 (excluding punctuation)`;
+    } else if (level === "5**") {
+      prompt += `
+- Strong command of format and structure
+- Sophisticated, varied vocabulary
+- Highly accurate grammar
+- Style is confident, mature and fluent
+- Word count: 700–850 (excluding punctuation)`;
+    }
+
+    return prompt;
   }
 
-  const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
+  async function getWriting() {
+    const writingPrompt = await generateWritingPrompt();
 
-  const headers = {
-    "Content-Type": "application/json",
-    "api-key": process.env.AZURE_OPENAI_KEY
-  };
-
-  try {
     const writingRes = await fetch(openaiUrl, {
       method: "POST",
       headers,
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "You are an HKDSE English writing examiner." },
-          { role: "user", content: prompt }
+          {
+            role: "system",
+            content: "You are an HKDSE English writing examiner.",
+          },
+          { role: "user", content: writingPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 1000
-      })
+        max_tokens: 1000,
+      }),
     });
 
     const writingData = await writingRes.json();
     let writing = writingData.choices?.[0]?.message?.content || "";
 
-    writing = writing.replace(/Word count:\s*\d+\s*words?/i, "").trim();
+    // Remove old word count
+    writing = writing.replace(/Word count:\s*\d+\s*words?/gi, "").trim();
 
-    const cleanText = writing.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]"']/g, "").replace(/\s{2,}/g, " ");
-    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
+    // Count words (excluding punctuation)
+    const cleaned = writing
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]"']/g, "")
+      .replace(/\s{2,}/g, " ");
+    const wordCount = cleaned.split(/\s+/).filter(Boolean).length;
 
-    writing += `\n\nWord count: \${wordCount} words`;
+    writing += `\n\nWord count: ${wordCount} words`;
+
+    return { writing, wordCount };
+  }
+
+  try {
+    let { writing, wordCount } = await getWriting();
+
+    // Enforce min word count. If too short, regenerate once.
+    if (wordCount < minWords) {
+      console.log("⚠️ First writing too short (" + wordCount + " words), retrying...");
+      const secondAttempt = await getWriting();
+      writing = secondAttempt.writing;
+      wordCount = secondAttempt.wordCount;
+    }
 
     const feedbackPrompt = `You are a DSE English Paper 2 examiner.
 
 The following writing was generated to simulate a Level ${level} student's performance. Your task is NOT to give a score, but to justify why the writing matches this level in a fixed format.
-
 
 Provide comments in this format:
 ---
@@ -107,12 +129,7 @@ Organisation:
 [4–5 sentences about structure and coherence with concrete examples]
 ---
 
-Stay within the chosen band and provide possible marks as if a real examiner marked the generated work using the following format:
-   C   L   O
-1st marker 6 6 6
-2nd marker 6 6 6
-
-The 1st marker is always a stricter one while the 2nd marker is always more leniet.
+Do not comment on score. Do not mention other levels. Stay within the chosen band.
 
 Writing:
 ${writing}`;
@@ -123,11 +140,11 @@ ${writing}`;
       body: JSON.stringify({
         messages: [
           { role: "system", content: "You are an HKDSE examiner." },
-          { role: "user", content: feedbackPrompt }
+          { role: "user", content: feedbackPrompt },
         ],
         temperature: 0.5,
-        max_tokens: 500
-      })
+        max_tokens: 500,
+      }),
     });
 
     const feedbackData = await feedbackRes.json();
@@ -136,6 +153,9 @@ ${writing}`;
     res.status(200).json({ writing, comment });
   } catch (err) {
     console.error("FULL API ERROR:", JSON.stringify(err, null, 2));
-    res.status(500).json({ error: "Failed to generate writing or feedback.", details: err.message || err });
+    res.status(500).json({
+      error: "Failed to generate writing or feedback.",
+      details: err.message || err,
+    });
   }
-}
+};
