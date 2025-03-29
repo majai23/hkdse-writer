@@ -54,16 +54,13 @@ Word count: ___ words
     const writingData = await writingRes.json();
     let writing = writingData.choices?.[0]?.message?.content || "";
 
-    // Remove estimated word count if present
     writing = writing.replace(/Word count:\s*\d+\s*words?/i, "").trim();
 
-    // Count words excluding punctuation
-    const cleaned = writing
+    const cleanText = writing
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]"']/g, "")
       .replace(/\s{2,}/g, " ");
-    const wordCount = cleaned.split(/\s+/).filter(Boolean).length;
+    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
 
-    // Truncate if too long (after last full stop within limit)
     if (wordCount > max) {
       const sentences = writing.split(/(?<=[.?!])\s+/);
       let truncated = "";
@@ -81,7 +78,6 @@ Word count: ___ words
       writing += `\n\n⚠️ Truncated to ${count} words to fit the ${min}-${max} range.`;
     }
 
-    // Warning if too short
     let warning = "";
     if (wordCount < min) {
       warning = `\n\n⚠️ Warning: Only ${wordCount} words. This is below the required minimum for Level ${level} (${min}–${max}).`;
@@ -91,20 +87,27 @@ Word count: ___ words
 
     const feedbackPrompt = `You are a DSE English Paper 2 examiner.
 
-The following writing was generated to simulate a Level ${level} student's performance. Justify why it matches the band in the fixed format below.
+The following writing was generated to simulate a Level ${level} student's performance. Justify why it matches the band in the fixed format below. Then suggest improvements and revise it using better vocabulary.
 
 ---
 Content:
-[2–3 sentences about relevance, clarity, ideas, support]
+[4–5 sentences about relevance, clarity, ideas, support]
 
 Language:
-[2–3 sentences about grammar, phrasing, vocabulary]
+[4-5 sentences about grammar, phrasing, vocabulary]
 
 Organisation:
-[2–3 sentences about paragraphing, coherence, transitions]
----
+[4–5 sentences about paragraphing, coherence, transitions]
 
-Writing:
+Vocabulary Upgrade:
+- List 5 simple or vague phrases from the writing.
+- Suggest stronger, more precise vocabulary alternatives.
+- Briefly explain why they are better.
+
+Revised Version with Vocabulary Upgraded:
+- Rewrite the original passage using upgraded vocabulary where appropriate while keeping structure and ideas intact.
+
+Original Writing:
 ${writing}`;
 
     const feedbackRes = await fetch(openaiUrl, {
@@ -112,11 +115,11 @@ ${writing}`;
       headers,
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "You are an HKDSE examiner." },
+          { role: "system", content: "You are an HKDSE examiner and writing coach." },
           { role: "user", content: feedbackPrompt }
         ],
-        temperature: 0.5,
-        max_tokens: 500
+        temperature: 0.6,
+        max_tokens: 1200
       })
     });
 
