@@ -1,6 +1,4 @@
 
-const fetch = require("node-fetch");
-
 module.exports = async function handler(req, res) {
   const { topic, type, level } = req.body;
 
