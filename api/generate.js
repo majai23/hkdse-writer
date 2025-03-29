@@ -86,15 +86,16 @@ Performance expectations:`;
     const writingData = await writingRes.json();
     let writing = writingData.choices?.[0]?.message?.content || "";
 
-    // Remove old word count
+    // Remove old word count line
     writing = writing.replace(/Word count:\s*\d+\s*words?/gi, "").trim();
 
     // Count words (excluding punctuation)
-    const cleaned = writing
+    const cleanText = writing
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]"']/g, "")
       .replace(/\s{2,}/g, " ");
-    const wordCount = cleaned.split(/\s+/).filter(Boolean).length;
+    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
 
+    // Append proper word count
     writing += `\n\nWord count: ${wordCount} words`;
 
     return { writing, wordCount };
@@ -111,7 +112,8 @@ Performance expectations:`;
       wordCount = secondAttempt.wordCount;
     }
 
-    const feedbackPrompt = `You are a DSE English Paper 2 examiner.
+    const feedbackPrompt =
+`You are a DSE English Paper 2 examiner.
 
 The following writing was generated to simulate a Level ${level} student's performance. Your task is NOT to give a score, but to justify why the writing matches this level in a fixed format.
 
