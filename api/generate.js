@@ -113,7 +113,7 @@ Stay within the chosen band and provide possible marks as if a real examiner mar
 1st marker 6 6 6
 2nd marker 6 6 6
 
-The 1st marker is always a stricter one while the 2nd marker is always more leniet.`;
+The 1st marker is always a stricter one while the 2nd marker is always more leniet.
 
 Writing:
 \${writing}\`;
