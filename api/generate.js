@@ -31,27 +31,28 @@ async function handler(req, res) {
   const extraTypeHint = typeHints[type] || "";
 
   const styleGuidelines = {
-    "5": `Write clearly and directly with basic to intermediate vocabulary. Support your ideas with two real-life examples.`,
-    "5*": `Write fluently using varied vocabulary and sentence structures. Include rhetorical questions or persuasive techniques. Use at least two well-developed real-life examples.`,
-    "5**": `Use a sophisticated tone and precise vocabulary. Structure arguments logically and provide three real-life examples from society, education, or youth issues. Use rhetorical devices and transitions.`
+    "5": "Write clearly and directly with basic to intermediate vocabulary. Support your ideas with two real-life examples.",
+    "5*": "Write fluently using varied vocabulary and sentence structures. Include rhetorical questions or persuasive techniques. Use at least two well-developed real-life examples.",
+    "5**": "Use a sophisticated tone and precise vocabulary. Structure arguments logically and provide three real-life examples from society, education, or youth issues. Use rhetorical devices and transitions."
   };
 
-  const prompt = \`You are an HKDSE English Paper 2 examiner.
-
-Task:
-Write a \${type} on the topic: "\${topic}" that would be awarded Level \${level} in the HKDSE exam.
-
-Instructions:
-\${extraTypeHint}
-\${styleGuidelines[level]}
-
-IMPORTANT:
-- Structure the writing in at least 7 paragraphs.
-- You MUST write between \${minWords} and \${maxWords} words.
-- Count only real words (not punctuation or blank lines).
-- End with: Word count: ___ words
-- Do NOT say what level the student is writing at.
-\`;
+  const prompt = [
+    "You are an HKDSE English Paper 2 examiner.",
+    "",
+    `Task:`,
+    `Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.`,
+    "",
+    "Instructions:",
+    extraTypeHint,
+    styleGuidelines[level],
+    "",
+    "IMPORTANT:",
+    "- Structure the writing in at least 7 paragraphs.",
+    `- You MUST write between ${minWords} and ${maxWords} words.`,
+    "- Count only real words (not punctuation or blank lines).",
+    "- End with: Word count: ___ words",
+    "- Do NOT say what level the student is writing at."
+  ].join("\n");
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
   const headers = {
@@ -84,7 +85,7 @@ IMPORTANT:
     const cleanWords = stripped.split(/\s+/).filter(Boolean);
     const actualWordCount = cleanWords.length;
 
-    const finalText = contentOnly + `\n\nWord count: \${actualWordCount} words`;
+    const finalText = contentOnly + `\n\nWord count: ${actualWordCount} words`;
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
