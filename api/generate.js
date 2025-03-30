@@ -18,9 +18,9 @@ module.exports = async function handler(req, res) {
   const { min, max } = limits[level];
 
   const styles = {
-    "5": `Write like a realistic Level 5 HKDSE student. The tone should be natural and a little casual, like Chris Wong's article on shrinking families. Include relatable personal touches, rhetorical questions, or storytelling. Some awkward phrasing is fine. Make your grammar mostly accurate but not perfect. Vocabulary should be simple to intermediate. Structure should have clear points but some uneven development is acceptable. Target ${min}–${max} words.`,
-    "5*": `Write like a confident Level 5* student. Use a formal tone and structured paragraphs like the school bus letter to the Bus Operators Association. Use extended arguments and support each with elaboration and examples. Your grammar should be largely accurate, and vocabulary moderately rich. Slight errors in expression are okay. Aim for fluency and coherence. Target ${min}–${max} words.`,
-    "5**": `Write like a top Level 5** HKDSE candidate. Your language should be fluent, mature, and academically persuasive — like the real sports vs virtual sports essay. Use rhetorical techniques (e.g., parallelism, repetition), topic sentences, and transition words. Vocabulary should be advanced but appropriate. Structure must be coherent and logical with well-developed paragraphs. Target ${min}–${max} words. Avoid native-speaker perfection — simulate local excellence.`
+    "5": `Write like a realistic Level 5 HKDSE student... Target ${min}–${max} words.`,
+    "5*": `Write like a confident Level 5* student... Target ${min}–${max} words.`,
+    "5**": `Write like a top Level 5** HKDSE candidate... Target ${min}–${max} words.`
   };
 
   const writingPrompt = `You are an HKDSE English Paper 2 student.
@@ -91,13 +91,13 @@ The following writing was generated to simulate a Level ${level} student's perfo
 
 ---
 Content:
-[4–5 sentences about relevance, clarity, ideas, support]
+[2–3 sentences about relevance, clarity, ideas, support]
 
 Language:
-[4-5 sentences about grammar, phrasing, vocabulary]
+[2–3 sentences about grammar, phrasing, vocabulary]
 
 Organisation:
-[4–5 sentences about paragraphing, coherence, transitions]
+[2–3 sentences about paragraphing, coherence, transitions]
 
 Vocabulary Upgrade:
 - List 5 simple or vague phrases from the writing.
@@ -119,12 +119,12 @@ ${writing}`;
           { role: "user", content: feedbackPrompt }
         ],
         temperature: 0.6,
-        max_tokens: 1200
+        max_tokens: 900
       })
     });
 
     const feedbackData = await feedbackRes.json();
-    const comment = feedbackData.choices?.[0]?.message?.content || "";
+    const comment = feedbackData.choices?.[0]?.message?.content || "⚠️ No feedback returned. Please try again.";
 
     res.status(200).json({ writing, comment });
   } catch (err) {
