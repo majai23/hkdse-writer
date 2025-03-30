@@ -76,15 +76,17 @@ Requirements:
     const writingData = await writingRes.json();
     const fullText = writingData.choices?.[0]?.message?.content || "";
 
-    // Remove punctuation and calculate real word count
     const contentOnly = fullText.replace(/Word count:.*/i, "").trim();
     const stripped = contentOnly.replace(/[.,!?;:"'()\[\]{}<>\/\-]+/g, "");
     const words = stripped.split(/\s+/).filter(Boolean);
     const realCount = words.length;
 
-    if (realCount < wordRange.min || realCount > wordRange.max) {
+    const lowerLimit = wordRange.min - 10;
+    const upperLimit = wordRange.max + 10;
+
+    if (realCount < lowerLimit || realCount > upperLimit) {
       return res.status(400).json({
-        error: `AI output had ${realCount} words (excluding punctuation), which is outside the target range (${wordRange.min}–${wordRange.max}). Please try again.`
+        error: `AI output had ${realCount} words (excluding punctuation), which is outside the acceptable range (${lowerLimit}–${upperLimit}).`
       });
     }
 
