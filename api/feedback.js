@@ -2,6 +2,13 @@
 export default async function handler(req, res) {
   const { writing, level } = req.body;
 
+  console.log("FEEDBACK INPUT:", { level, writingSnippet: writing?.slice(0, 100) });
+
+  if (!writing || !level) {
+    console.error("Missing required fields: writing or level");
+    return res.status(400).json({ error: "Missing writing or level" });
+  }
+
   const max_tokens = {
     "5": 1000,
     "5*": 1200,
@@ -47,11 +54,18 @@ ${writing}
     });
 
     const data = await response.json();
-    const feedback = data.choices?.[0]?.message?.content || "";
+    console.log("FEEDBACK RESPONSE:", data);
+
+    const feedback = data.choices?.[0]?.message?.content;
+    if (!feedback) {
+      console.error("No feedback content returned.");
+      return res.status(500).json({ error: "No feedback returned from model" });
+    }
+
     res.status(200).json({ feedback });
 
   } catch (err) {
     console.error("Feedback generation error:", err);
-    res.status(500).json({ error: "Failed to generate feedback." });
+    res.status(500).json({ error: "Failed to generate feedback" });
   }
 }
