@@ -1,5 +1,5 @@
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   const tokenLimits = {
@@ -92,3 +92,5 @@ IMPORTANT:
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
+
+module.exports = handler;
