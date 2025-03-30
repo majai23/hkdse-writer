@@ -19,9 +19,9 @@ export default async function handler(req, res) {
   const maxWords = wordLimits[level].max;
 
   const styleGuidelines = {
-    "5": `Write like a capable HKDSE candidate. Use clear paragraphing, appropriate format, and intermediate vocabulary. Allow for minor awkward phrasing or repetition. Maintain a polite, exam-appropriate tone. Use at least one relatable real-life example to support your point.`,
-    "5*": `Use stronger vocabulary and more varied sentence structures. Maintain clarity and logical structure. Include emotional or persuasive elements like rhetorical questions, comparisons, or personal examples. Provide at least one real-life situation or example to support a key point.`,
-    "5**": `Write with sophistication, cohesion, and a mature tone. Use rhetorical devices, complex structures, and academic transitions. Provide insightful and realistic real-life examples to support your arguments. These examples can be from current events, society, or youth experience. Do not sound overly casual or self-referential.`
+    "5": `Write clearly and directly, using proper format and simple to intermediate vocabulary. The tone should be exam-appropriate, with safe sentence structures. Provide at least two concrete real-life examples that help explain your ideas. Examples can be basic or familiar to teenagers.`,
+    "5*": `Write fluently with clear structure and more varied vocabulary. Express emotion or persuasion naturally, using rhetorical questions or comparisons. Provide at least two thoughtful real-life examples or situations that support your points clearly and persuasively.`,
+    "5**": `Write with a mature tone, sophisticated structure, and precise vocabulary. Use rhetorical devices, transitions, and complex arguments. Provide three insightful real-life examples, such as from current events, societal trends, or real youth experiences. Make sure each example supports a clear, deep idea. Avoid sounding robotic or overly casual.`
   };
 
   const prompt = `You are an HKDSE English Paper 2 examiner.
@@ -75,7 +75,7 @@ IMPORTANT:
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Boosted token limit error:", err);
+    console.error("Distinct level example error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
