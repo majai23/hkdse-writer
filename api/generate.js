@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     "5**": `Write with a mature tone, sophisticated structure, and precise vocabulary. Use rhetorical devices, transitions, and complex arguments. Provide three insightful real-life examples, such as from current events, societal trends, or real youth experiences. Make sure each example supports a clear, deep idea. Avoid sounding robotic or overly casual.`
   };
 
-  const prompt = `You are an HKDSE English Paper 2 examiner.
+  const basePrompt = `You are an HKDSE English Paper 2 examiner.
 
 Task:
 Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.
@@ -40,16 +40,13 @@ IMPORTANT:
 - Do NOT say what level the writer is.
 - End with: Word count: ___ words`;
 
-  const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
-  const headers = {
-    "Content-Type": "application/json",
-    "api-key": process.env.AZURE_OPENAI_KEY
-  };
-
-  try {
-    const writingRes = await fetch(openaiUrl, {
+  async function fetchResponse(prompt) {
+    const response = await fetch("https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview", {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.AZURE_OPENAI_KEY
+      },
       body: JSON.stringify({
         messages: [
           { role: "system", content: "You are an HKDSE English writing examiner." },
@@ -59,23 +56,37 @@ IMPORTANT:
         max_tokens
       })
     });
+    const json = await response.json();
+    return json.choices?.[0]?.message?.content || "";
+  }
 
-    const writingData = await writingRes.json();
-    let fullText = writingData.choices?.[0]?.message?.content || "";
-
-    const contentOnly = fullText.replace(/Word count:\s*\d+\s*words?/i, "").trim();
-    const stripped = contentOnly
+  function countWords(text) {
+    const stripped = text
+      .replace(/Word count:\s*\d+\s*words?/i, "")
       .replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ")
       .replace(/\n+/g, " ");
+    const words = stripped.split(/\s+/).filter(Boolean);
+    return { wordCount: words.length, cleaned: stripped.trim() };
+  }
 
-    const cleanWords = stripped.split(/\s+/).filter(Boolean);
-    const actualWordCount = cleanWords.length;
+  try {
+    let fullText = await fetchResponse(basePrompt);
+    let { wordCount, cleaned } = countWords(fullText);
 
-    const finalText = contentOnly + `\n\nWord count: ${actualWordCount} words`;
+    // If it's under the range, request revision from GPT once
+    if (wordCount < minWords) {
+      const revisionPrompt = `Your previous response was only ${wordCount} words, but it needs to be between ${minWords} and ${maxWords} words. Please revise and expand it while maintaining the same tone and style. End with: Word count: ___ words`;
+      fullText = await fetchResponse(revisionPrompt);
+      const reCount = countWords(fullText);
+      wordCount = reCount.wordCount;
+      cleaned = reCount.cleaned;
+    }
+
+    const finalText = cleaned + `\n\nWord count: ${wordCount} words`;
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Final word length fix error:", err);
+    console.error("Auto-rewrite backend error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
