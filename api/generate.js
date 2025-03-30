@@ -8,53 +8,29 @@ export default async function handler(req, res) {
     "5**": 1150  // approx 850 words
   };
 
-  const max_tokens = tokenLimits[level] || 1000;
-
-  const prompts = {
-    "5": `You are simulating a Level 5 HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a solid Level 5 candidate.
-
-Requirements:
-- Clear, appropriate ideas with some development
-- Reasonable structure and coherence, but not perfect
-- Some minor errors or awkward phrasing allowed
-- Use intermediate-level vocabulary
-- Target: ~750 words (~1000 tokens)
-- End with: Word count: ___ words`,
-
-    "5*": `You are simulating a Level 5* HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a confident Level 5* candidate.
-
-Requirements:
-- Structured, well-developed, fluent
-- Some sophistication in vocabulary and phrasing
-- Minor errors allowed
-- Target: ~800 words (~1050 tokens)
-- End with: Word count: ___ words`,
-
-    "5**": `You are simulating a Level 5** HKDSE English Paper 2 student.
-
-Task:
-Write a ${type} on the topic: "${topic}" in the style of a top Level 5** candidate.
-
-Requirements:
-- Mature, well-organized, fluent and accurate
-- Sophisticated vocabulary and rhetorical techniques
-- Target: ~850 words (~1150 tokens)
-- End with: Word count: ___ words`
+  const wordTarget = {
+    "5": "750 words",
+    "5*": "800 words",
+    "5**": "850 words"
   };
+
+  const max_tokens = tokenLimits[level] || 1000;
+  const prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
+
+Task:
+Write a ${type} on the topic: "${topic}" in the style of a Level ${level} HKDSE candidate.
+
+Requirements:
+- Structure and tone should fit the text type
+- Match the expected language level, vocabulary, and coherence of a Level ${level} student
+- Your response should aim for approximately ${wordTarget[level]} (within token limit)
+- End your writing with: "Word count: ___ words"`;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
   const headers = {
     "Content-Type": "application/json",
     "api-key": process.env.AZURE_OPENAI_KEY
   };
-
-  const prompt = prompts[level] || prompts["5"];
 
   try {
     const writingRes = await fetch(openaiUrl, {
@@ -71,11 +47,19 @@ Requirements:
     });
 
     const writingData = await writingRes.json();
-    const fullText = writingData.choices?.[0]?.message?.content || "";
+    let fullText = writingData.choices?.[0]?.message?.content || "";
 
-    res.status(200).json({ writing: fullText });
+    // Remove token-estimated word count footer
+    const contentOnly = fullText.replace(/Word count:\s*\d+\s*words?/i, "").trim();
+    const stripped = contentOnly.replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ");
+    const cleanWords = stripped.split(/\s+/).filter(Boolean);
+    const actualWordCount = cleanWords.length;
+
+    const finalText = contentOnly + `\n\nWord count: ${actualWordCount} words`;
+
+    res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Token-limit Error:", err);
-    res.status(500).json({ error: "Failed to generate writing with token control." });
+    console.error("Token-based error:", err);
+    res.status(500).json({ error: "Failed to generate writing." });
   }
 }
