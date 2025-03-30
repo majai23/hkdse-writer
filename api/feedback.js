@@ -9,18 +9,20 @@ export default async function handler(req, res) {
   }[level] || 1000;
 
   const prompt = `
-You are an HKDSE English Paper 2 examiner.
+You are an experienced HKDSE English Paper 2 examiner.
 
-You are given a piece of student writing. Your task is to write detailed examiner feedback for it.
+Your task is to evaluate a student's writing based on three categories:
+1. Content
+2. Language
+3. Organization
 
-Instructions:
-- Assess the writing according to three criteria: Content, Language, and Organization.
-- For each category, write 2-4 sentences.
-- Quote phrases or lines directly from the student’s writing to explain your comments.
-- Be specific and educational. Mention both strengths and minor areas for improvement.
-- End the feedback without assigning a numerical score or grade.
+For each category:
+- Write 2 to 4 sentences
+- Quote specific phrases or lines from the student's writing to support your comments
+- Explain both strengths and minor weaknesses
+- Do not assign a score or say what level it is
 
-Student writing:
+Here is the student writing:
 ${writing}
 `;
 
@@ -36,10 +38,10 @@ ${writing}
       headers,
       body: JSON.stringify({
         messages: [
-          { role: "system", content: "You are a professional HKDSE English examiner." },
+          { role: "system", content: "You are a professional HKDSE English writing examiner." },
           { role: "user", content: prompt }
         ],
-        temperature: 0.5,
+        temperature: 0.4,
         max_tokens
       })
     });
