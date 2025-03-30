@@ -2,79 +2,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>HKDSE AI Writing Tool</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
-    label { display: block; margin-top: 20px; font-weight: bold; }
-    select, input, button, pre { width: 100%; padding: 10px; margin-top: 5px; }
-    button { background-color: #1e40af; color: white; border: none; cursor: pointer; }
-    button:hover { background-color: #1d4ed8; }
-    pre { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; min-height: 150px; white-space: pre-wrap; }
-  </style>
+  <meta charset="UTF-8">
+  <title>HKDSE Writer</title>
 </head>
 <body>
-  <h1>HKDSE English Writing AI</h1>
-  <p>Generate Band 5 / 5* / 5** DSE-level writing with clear examiner feedback provided.</p>
+  <h1>HKDSE AI Writing Tool</h1>
 
-  <label for="type">Writing Type</label>
+  <label for="type">Text Type:</label>
   <select id="type">
-    <option value="blog">Blog</option>
-    <option value="speech">Speech</option>
-    <option value="letter to the editor">Letter to the Editor</option>
-    <option value="formal letter">Formal Letter</option>
-    <option value="proposal">Proposal</option>
     <option value="article">Article</option>
-    <option value="one-sided argumentative essay">One-sided Argumentative Essay</option>
-    <option value="two-sided argumentative essay">Two-sided Argumentative Essay</option>
+    <option value="letter">Letter</option>
+    <option value="essay">Essay</option>
+    <option value="speech">Speech</option>
   </select>
 
-  <label for="level">Target Band</label>
+  <label for="level">Level:</label>
   <select id="level">
-    <option value="5">5</option>
-    <option value="5*">5*</option>
-    <option value="5**">5**</option>
+    <option value="5">Level 5</option>
+    <option value="5*">Level 5*</option>
+    <option value="5**">Level 5**</option>
   </select>
 
-  <label for="topic">Topic</label>
-  <input type="text" id="topic" placeholder="e.g. Should school uniforms be mandatory?" />
+  <label for="topic">Topic:</label>
+  <input type="text" id="topic" placeholder="Enter topic here..." />
 
   <button onclick="generateWriting()">Generate Writing</button>
 
-  <label for="output">Generated Writing</label>
-  <pre id="output">Your AI writing will appear here...</pre>
+  <pre id="output" style="white-space: pre-wrap; margin-top: 20px;"></pre>
 
-  <label for="comment">Examiner Feedback</label>
-  <pre id="comment">AI-generated comment based on DSE Paper 2 rubrics will appear here...</pre>
-
-  <script>
-    async function generateWriting() {
-      const topic = document.getElementById("topic").value;
-      const type = document.getElementById("type").value;
-      const level = document.getElementById("level").value;
-
-      const output = document.getElementById("output");
-      const comment = document.getElementById("comment");
-
-      output.innerText = "Generating writing...";
-      comment.innerText = "Generating examiner feedback...";
-
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, type, level })
-      });
-
-      if (!response.ok) {
-        output.innerText = "⚠️ API Error. Please check server logs.";
-        comment.innerText = "";
-        return;
-      }
-
-      const data = await response.json();
-      output.innerText = data.writing || "⚠️ No writing generated.";
-      comment.innerText = data.comment || "⚠️ No feedback received.";
-    }
-  </script>
+  <script src="generate.js"></script>
 </body>
 </html>
