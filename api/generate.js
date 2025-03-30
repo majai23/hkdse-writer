@@ -9,9 +9,9 @@ export default async function handler(req, res) {
   };
 
   const wordTarget = {
-    "5": "750 words",
-    "5*": "800 words",
-    "5**": "850 words"
+    "5": "> 750 words",
+    "5*": "> 800 words",
+    "5**": "> 850 words"
   };
 
   const max_tokens = tokenLimits[level] || 2300;
