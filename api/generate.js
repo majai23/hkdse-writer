@@ -24,7 +24,8 @@ export default async function handler(req, res) {
     "5**": `Write with a mature tone, sophisticated structure, and precise vocabulary. Use rhetorical devices, transitions, and complex arguments. Provide three insightful real-life examples, such as from current events, societal trends, or real youth experiences. Make sure each example supports a clear, deep idea. Avoid sounding robotic or overly casual.`
   };
 
-  const basePrompt = `You are an HKDSE English Paper 2 examiner.
+  const basePrompt = (revised = false, originalText = "", actualCount = 0) => `
+You are an HKDSE English Paper 2 examiner.
 
 Task:
 Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.
@@ -36,9 +37,16 @@ IMPORTANT:
 - You MUST write between ${minWords} and ${maxWords} words.
 - You MUST count your words accurately (not tokens).
 - Do NOT count paragraph spacing or blank lines as words.
-- If the writing is outside the word range, revise and rewrite it before ending.
 - Do NOT say what level the writer is.
-- End with: Word count: ___ words`;
+- End with: Word count: ___ words
+${revised ? `
+
+REVISION NOTICE:
+Your last response was only ${actualCount} words, which is too short. Expand and improve it so the total word count falls between ${minWords}–${maxWords} words. Keep the same tone and structure. Do not introduce unrelated content.
+Original Response:
+${originalText}
+` : ""}
+`;
 
   async function fetchResponse(prompt) {
     const response = await fetch("https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview", {
@@ -70,13 +78,13 @@ IMPORTANT:
   }
 
   try {
-    let fullText = await fetchResponse(basePrompt);
+    let fullText = await fetchResponse(basePrompt(false));
     let { wordCount, cleaned } = countWords(fullText);
 
-    // If it's under the range, request revision from GPT once
+    // Retry once if it's under target
     if (wordCount < minWords) {
-      const revisionPrompt = `Your previous response was only ${wordCount} words, but it needs to be between ${minWords} and ${maxWords} words. Please revise and expand it while maintaining the same tone and style. End with: Word count: ___ words`;
-      fullText = await fetchResponse(revisionPrompt);
+      const retryPrompt = basePrompt(true, cleaned, wordCount);
+      fullText = await fetchResponse(retryPrompt);
       const reCount = countWords(fullText);
       wordCount = reCount.wordCount;
       cleaned = reCount.cleaned;
@@ -86,7 +94,7 @@ IMPORTANT:
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Auto-rewrite backend error:", err);
+    console.error("Fixed fallback backend error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
