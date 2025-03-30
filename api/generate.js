@@ -3,18 +3,18 @@ export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   const tokenLimits = {
-    "5": 1500,
-    "5*": 1700,
-    "5**": 1900
+    "5": 1600,
+    "5*": 1800,
+    "5**": 2000
   };
 
   const wordLimits = {
     "5": { min: 480, max: 520 },
-    "5*": { min: 630, max: 670 },
+    "5*": { min: 580, max: 620 },
     "5**": { min: 730, max: 770 }
   };
 
-  const max_tokens = tokenLimits[level] || 1500;
+  const max_tokens = tokenLimits[level] || 1600;
   const minWords = wordLimits[level].min;
   const maxWords = wordLimits[level].max;
 
@@ -75,7 +75,7 @@ IMPORTANT:
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Distinct level example error:", err);
+    console.error("Final word length fix error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
