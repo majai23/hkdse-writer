@@ -19,9 +19,9 @@ export default async function handler(req, res) {
   const maxWords = wordLimits[level].max;
 
   const styleGuidelines = {
-    "5": `Write like a capable HKDSE candidate. Use clear paragraphing, appropriate format, and intermediate vocabulary. Allow for minor awkward phrasing or repetition. Do not try to sound native or perfect. Maintain a polite, exam-appropriate tone.`,
-    "5*": `Use stronger vocabulary and more varied sentence structures. Maintain clarity, and add emotional engagement or persuasive techniques like rhetorical questions and comparisons. Minor grammar issues are acceptable.`,
-    "5**": `Write with sophistication, cohesion, and mature tone. Use rhetorical devices, complex structures, and academic transitions. Vocabulary should be precise and rich. Do not sound overly casual or self-referential. Mimic real top-scoring HKDSE scripts.`
+   "5": `Write like a capable HKDSE candidate. Use clear paragraphing, appropriate format, and intermediate vocabulary. Allow for minor awkward phrasing or repetition. Maintain a polite, exam-appropriate tone. Use at least one relatable real-life example to support your point.`,
+    "5*": `Use stronger vocabulary and more varied sentence structures. Maintain clarity and logical structure. Include emotional or persuasive elements like rhetorical questions, comparisons, or personal examples. Provide at least one real-life situation or example to support a key point.`,
+    "5**": `Write with sophistication, cohesion, and a mature tone. Use rhetorical devices, complex structures, and academic transitions. Provide insightful and realistic real-life examples to support your arguments. These examples can be from current events, society, or youth experience. Do not sound overly casual or self-referential.`
   };
 
   const prompt = `You are an HKDSE English Paper 2 examiner.
