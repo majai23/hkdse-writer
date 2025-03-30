@@ -3,9 +3,9 @@ export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   const tokenLimits = {
-    "5": 1200,
-    "5*": 1250,
-    "5**": 1300
+    "5": 1300,
+    "5*": 1350,
+    "5**": 1400
   };
 
   const wordLimits = {
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     "5**": { min: 750, max: 900 }
   };
 
-  const max_tokens = tokenLimits[level] || 1200;
+  const max_tokens = tokenLimits[level] || 1300;
   const minWords = wordLimits[level].min;
   const maxWords = wordLimits[level].max;
 
@@ -71,7 +71,7 @@ IMPORTANT:
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Strict word control error:", err);
+    console.error("Token-adjusted error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
