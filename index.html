@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HKDSE English Writing AI</title>
+  <title>HKDSE AI Writing Tool</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
     label { display: block; margin-top: 20px; font-weight: bold; }
@@ -51,24 +51,6 @@
   <script>
     let cachedWriting = "";
 
-    function getWritingPrompt(type, level, topic) {
-      const baseIntro = \`You are an HKDSE English examiner. Write a Level \${level} \${type} on the topic: "\${topic}".\`;
-      const endNote = "The writing must include at least 7 well-developed paragraphs.";
-
-      const textTypeHints = {
-        "blog": "Use an engaging and reflective tone. Write as if addressing teenage readers on a personal blog. Include personal experience or opinion.",
-        "speech": "Use rhetorical questions and inclusive language like 'we' or 'you'. Begin with a greeting and end with a thank you.",
-        "letter to the editor": "Use a persuasive and formal tone. Begin with 'Dear Editor' and end with your name. Include a strong stance and at least two solutions.",
-        "formal letter": "Follow the format of a formal letter with an opening, body, and closing. Use polite and respectful tone throughout.",
-        "proposal": "Structure into sections with subheadings (e.g. Purpose, Benefits, Implementation). Use formal tone and bullet-style logic.",
-        "article": "Use a semi-formal tone, a catchy introduction, and informative middle. End with a reflective conclusion. Assume readers are Young Post audience.",
-        "one-sided argumentative essay": "Write an essay taking a strong stance. Each paragraph should support your view logically with examples. No opposing views.",
-        "two-sided argumentative essay": "Include both sides of the argument with fair discussion. Conclude by clearly stating your final opinion."
-      };
-
-      return \`\${baseIntro}\n\${textTypeHints[type] || ""}\n\${endNote}\`;
-    }
-
     async function generateWriting() {
       const topic = document.getElementById("topic").value;
       const type = document.getElementById("type").value;
@@ -79,12 +61,10 @@
       output.innerText = "Generating writing...";
       comment.innerText = "Waiting for feedback generation...";
 
-      const prompt = getWritingPrompt(type, level, topic);
-
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: prompt, type, level })
+        body: JSON.stringify({ topic, type, level })
       });
 
       if (!response.ok) {
