@@ -79,6 +79,7 @@
 
     async function generateFeedback() {
       const comment = document.getElementById("comment");
+      const level = document.getElementById("level").value;
 
       if (!cachedWriting) {
         comment.innerText = "⚠️ Please generate writing first.";
@@ -90,7 +91,7 @@
       const response = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ writing: cachedWriting })
+        body: JSON.stringify({ writing: cachedWriting, level })
       });
 
       if (!response.ok) {
@@ -99,7 +100,7 @@
       }
 
       const data = await response.json();
-      comment.innerText = data.comment || "⚠️ No feedback returned.";
+      comment.innerText = data.feedback || "⚠️ No feedback returned.";
     }
   </script>
 </body>
