@@ -3,11 +3,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>HKDSE Writer</title>
+  <title>HKDSE AI Writing Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea, input, select, button { margin: 10px 0; width: 100%; }
+    button { padding: 10px; }
+    pre { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 5px; }
+  </style>
 </head>
 <body>
-  <h1>HKDSE AI Writing Tool</h1>
-
+  <h1>HKDSE Writing AI</h1>
   <label for="type">Text Type:</label>
   <select id="type">
     <option value="article">Article</option>
@@ -24,11 +29,15 @@
   </select>
 
   <label for="topic">Topic:</label>
-  <input type="text" id="topic" placeholder="Enter topic here..." />
+  <input type="text" id="topic" placeholder="e.g. Should school uniforms be mandatory?" />
 
   <button onclick="generateWriting()">Generate Writing</button>
 
-  <pre id="output" style="white-space: pre-wrap; margin-top: 20px;"></pre>
+  <h2>Generated Writing</h2>
+  <pre id="writing"></pre>
+
+  <h2>Examiner Feedback + Improvements</h2>
+  <pre id="feedback"></pre>
 
   <script src="generate.js"></script>
 </body>
