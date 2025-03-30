@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     "5**": `Write with a mature tone, sophisticated structure, and precise vocabulary. Use rhetorical devices, transitions, and complex arguments. Provide three insightful real-life examples, such as from current events, societal trends, or real youth experiences. Make sure each example supports a clear, deep idea. Avoid sounding robotic or overly casual.`
   };
 
-  const basePrompt = (revised = false, originalText = "", actualCount = 0) => `
+  const baseInstruction = `
 You are an HKDSE English Paper 2 examiner.
 
 Task:
@@ -39,27 +39,20 @@ IMPORTANT:
 - Do NOT count paragraph spacing or blank lines as words.
 - Do NOT say what level the writer is.
 - End with: Word count: ___ words
-${revised ? `
-
-REVISION NOTICE:
-Your last response was only ${actualCount} words, which is too short. Expand and improve it so the total word count falls between ${minWords}–${maxWords} words. Keep the same tone and structure. Do not introduce unrelated content.
-Original Response:
-${originalText}
-` : ""}
 `;
 
-  async function fetchResponse(prompt) {
-    const response = await fetch("https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview", {
+  const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
+  const headers = {
+    "Content-Type": "application/json",
+    "api-key": process.env.AZURE_OPENAI_KEY
+  };
+
+  async function fetchGPT(messages) {
+    const response = await fetch(openaiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.AZURE_OPENAI_KEY
-      },
+      headers,
       body: JSON.stringify({
-        messages: [
-          { role: "system", content: "You are an HKDSE English writing examiner." },
-          { role: "user", content: prompt }
-        ],
+        messages,
         temperature: 0.7,
         max_tokens
       })
@@ -78,23 +71,39 @@ ${originalText}
   }
 
   try {
-    let fullText = await fetchResponse(basePrompt(false));
-    let { wordCount, cleaned } = countWords(fullText);
+    // Step 1: First attempt
+    const messages = [
+      { role: "system", content: "You are an HKDSE English writing examiner." },
+      { role: "user", content: baseInstruction }
+    ];
 
-    // Retry once if it's under target
+    let output = await fetchGPT(messages);
+    let { wordCount, cleaned } = countWords(output);
+
+    // Step 2: If too short, retry with a full revision request
     if (wordCount < minWords) {
-      const retryPrompt = basePrompt(true, cleaned, wordCount);
-      fullText = await fetchResponse(retryPrompt);
-      const reCount = countWords(fullText);
-      wordCount = reCount.wordCount;
-      cleaned = reCount.cleaned;
+      const retryMessages = [
+        { role: "system", content: "You are an HKDSE English writing examiner." },
+        {
+          role: "user",
+          content: `${baseInstruction}
+
+Your previous answer was only ${wordCount} words, which is too short. Please revise and expand it so the word count is between ${minWords} and ${maxWords} words. Keep the structure and topic. Expand the original ideas. Do not change the tone.
+
+Original text:
+${cleaned}`
+        }
+      ];
+      output = await fetchGPT(retryMessages);
+      const revised = countWords(output);
+      wordCount = revised.wordCount;
+      cleaned = revised.cleaned;
     }
 
     const finalText = cleaned + `\n\nWord count: ${wordCount} words`;
-
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Fixed fallback backend error:", err);
+    console.error("Multi-turn strict fallback error:", err);
     res.status(500).json({ error: "Failed to generate writing." });
   }
 }
