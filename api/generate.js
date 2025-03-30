@@ -23,7 +23,7 @@ Requirements:
 - Use appropriate but limited vocabulary and sentence variety
 - Include some minor errors or awkward phrasing that are realistic for Level 5
 - Avoid native-speaker perfection
-- Show word count at the end of the piece (e.g., Word count: 678 words)`;
+- Show word count at the end of the piece`;
   } else if (level === "5*") {
     prompt = `You are simulating a Level 5* HKDSE English Paper 2 student.
 
@@ -36,7 +36,7 @@ Requirements:
 - Use a wider range of vocabulary and sentence structures than Level 5
 - Some minor grammatical errors are fine, but avoid awkward phrasing
 - Aim for fluency, cohesion, and formal tone
-- Show word count at the end of the piece (e.g., Word count: 745 words)`;
+- Show word count at the end of the piece`;
   } else {
     prompt = `You are simulating a Level 5** HKDSE English Paper 2 student.
 
@@ -49,7 +49,7 @@ Requirements:
 - Use rhetorical devices and strong transitions
 - Maintain coherence and cohesion throughout
 - Avoid native-like perfection but demonstrate excellence
-- Show word count at the end of the piece (e.g., Word count: 812 words)`;
+- Show word count at the end of the piece`;
   }
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
@@ -81,16 +81,19 @@ Requirements:
     const words = stripped.split(/\s+/).filter(Boolean);
     const realCount = words.length;
 
-    const lowerLimit = wordRange.min - 10;
-    const upperLimit = wordRange.max + 10;
+    const min = wordRange.min;
+    const max = wordRange.max;
 
-    if (realCount < lowerLimit || realCount > upperLimit) {
-      return res.status(400).json({
-        error: `AI output had ${realCount} words (excluding punctuation), which is outside the acceptable range (${lowerLimit}–${upperLimit}).`
-      });
+    let warning = "";
+    if (realCount < min) {
+      warning = `⚠️ Warning: Only ${realCount} words. This is below the minimum for Level ${level} (${min}–${max}).`;
+    } else if (realCount > max) {
+      warning = `⚠️ Warning: ${realCount} words. This is above the maximum for Level ${level} (${min}–${max}).`;
     }
 
-    const finalText = contentOnly.trim() + `\n\nWord count: ${realCount} words`;
+    const finalText = contentOnly.trim() +
+      `\n\nWord count: ${realCount} words` +
+      (warning ? `\n${warning}` : "");
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
