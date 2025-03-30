@@ -2,43 +2,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>HKDSE AI Writing Tool</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    textarea, input, select, button { margin: 10px 0; width: 100%; }
-    button { padding: 10px; }
-    pre { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 5px; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+    label { display: block; margin-top: 20px; font-weight: bold; }
+    select, input, button, pre { width: 100%; padding: 10px; margin-top: 5px; }
+    button { background-color: #1e40af; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #1d4ed8; }
+    pre { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; min-height: 150px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <h1>HKDSE Writing AI</h1>
-  <label for="type">Text Type:</label>
+  <h1>HKDSE English Writing AI</h1>
+  <p>Generate Band 5 / 5* / 5** DSE-level writing and examiner feedback with scores.</p>
+
+  <label for="type">Writing Type</label>
   <select id="type">
-    <option value="article">Article</option>
-    <option value="letter">Letter</option>
-    <option value="essay">Essay</option>
+    <option value="blog">Blog</option>
     <option value="speech">Speech</option>
+    <option value="letter to the editor">Letter to the Editor</option>
+    <option value="formal letter">Formal Letter</option>
+    <option value="proposal">Proposal</option>
+    <option value="article">Article</option>
+    <option value="one-sided argumentative essay">One-sided Argumentative Essay</option>
+    <option value="two-sided argumentative essay">Two-sided Argumentative Essay</option>
   </select>
 
-  <label for="level">Level:</label>
+  <label for="level">Target Band</label>
   <select id="level">
-    <option value="5">Level 5</option>
-    <option value="5*">Level 5*</option>
-    <option value="5**">Level 5**</option>
+    <option value="5">5</option>
+    <option value="5*">5*</option>
+    <option value="5**">5**</option>
   </select>
 
-  <label for="topic">Topic:</label>
+  <label for="topic">Topic</label>
   <input type="text" id="topic" placeholder="e.g. Should school uniforms be mandatory?" />
 
   <button onclick="generateWriting()">Generate Writing</button>
 
-  <h2>Generated Writing</h2>
-  <pre id="writing"></pre>
+  <label for="output">Generated Writing</label>
+  <pre id="output">Your AI writing will appear here...</pre>
 
-  <h2>Examiner Feedback + Improvements</h2>
-  <pre id="feedback"></pre>
+  <label for="comment">Examiner Feedback</label>
+  <pre id="comment">AI-generated comment based on DSE Paper 2 rubrics will appear here...</pre>
 
-  <script src="generate.js"></script>
+  <label for="scorebox">Score Breakdown</label>
+  <pre id="scorebox">C   L   O
+1st marker: -
+2nd marker: -</pre>
+
+  <script>
+    async function generateWriting() {
+      const topic = document.getElementById("topic").value;
+      const type = document.getElementById("type").value;
+      const level = document.getElementById("level").value;
+
+      const output = document.getElementById("output");
+      const comment = document.getElementById("comment");
+      const scorebox = document.getElementById("scorebox");
+
+      output.innerText = "Generating writing...";
+      comment.innerText = "Generating examiner feedback...";
+      scorebox.innerText = "C   L   O\n1st marker: -\n2nd marker: -";
+
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, type, level })
+      });
+
+      if (!response.ok) {
+        output.innerText = "⚠️ API Error. Please check server logs.";
+        comment.innerText = "";
+        return;
+      }
+
+      const data = await response.json();
+      output.innerText = data.writing || "⚠️ No writing generated.";
+      comment.innerText = data.comment || "⚠️ No feedback received.";
+
+      const scoreMatch = data.comment?.match(/C\s+L\s+O[\s\S]+?(1st marker.*?\d+\s+\d+\s+\d+)[\s\S]+?(2nd marker.*?\d+\s+\d+\s+\d+)/i);
+      if (scoreMatch) {
+        scorebox.innerText = "C   L   O\n" + scoreMatch[1] + "\n" + scoreMatch[2];
+      }
+    }
+  </script>
 </body>
 </html>
