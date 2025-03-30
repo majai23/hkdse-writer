@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const tokenLimits = {
     "5": 1300,
     "5*": 1350,
-    "5**": 1400
+    "5**": 1450  // Increased for more space for 5**
   };
 
   const wordLimits = {
@@ -35,6 +35,7 @@ ${styleGuidelines[level]}
 IMPORTANT:
 - You MUST write between ${minWords} and ${maxWords} words.
 - You MUST count your words accurately (not tokens).
+- Do NOT count paragraph spacing or blank lines as words.
 - If the writing is outside the word range, revise and rewrite it before ending.
 - Do NOT say what level the writer is.
 - End with: Word count: ___ words`;
@@ -62,8 +63,16 @@ IMPORTANT:
     const writingData = await writingRes.json();
     let fullText = writingData.choices?.[0]?.message?.content || "";
 
+    // Remove original word count
     const contentOnly = fullText.replace(/Word count:\s*\d+\s*words?/i, "").trim();
-    const stripped = contentOnly.replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ");
+
+    // Clean for accurate word count:
+    // - remove punctuation
+    // - replace paragraph breaks/newlines with space
+    const stripped = contentOnly
+      .replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ")
+      .replace(/\n+/g, " "); // collapse paragraph breaks
+
     const cleanWords = stripped.split(/\s+/).filter(Boolean);
     const actualWordCount = cleanWords.length;
 
