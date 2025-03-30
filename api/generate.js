@@ -3,28 +3,29 @@ export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   const tokenLimits = {
-    "5": 1000,   // approx 750 words
-    "5*": 1050,  // approx 800 words
-    "5**": 1150  // approx 850 words
+    "5": 1200,
+    "5*": 1250,
+    "5**": 1350
   };
 
   const wordTarget = {
-    "5": "750 words",
-    "5*": "800 words",
-    "5**": "850 words"
+    "5": "900 words",
+    "5*": "1000 words",
+    "5**": "1150 words"
   };
 
   const max_tokens = tokenLimits[level] || 1000;
-  const prompt = `You are simulating a Level ${level} HKDSE English Paper 2 student.
+  const prompt = `You are an HKDSE English Paper 2 examiner.
 
 Task:
-Write a ${type} on the topic: "${topic}" in the style of a Level ${level} HKDSE candidate.
+Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.
 
-Requirements:
-- Structure and tone should fit the text type
-- Match the expected language level, vocabulary, and coherence of a Level ${level} student
-- Your response should aim for approximately ${wordTarget[level]} (within token limit)
-- End your writing with: "Word count: ___ words"`;
+Instructions:
+- Use a realistic HKDSE student voice. Do not mention anything like “I am a Level ${level} student.”
+- Follow the correct format and tone for a ${type}
+- Ensure content, language and organisation reflect the level ${level} standard
+- Aim for approximately ${wordTarget[level]} within token limits
+- End with: Word count: ___ words`;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
   const headers = {
@@ -49,7 +50,7 @@ Requirements:
     const writingData = await writingRes.json();
     let fullText = writingData.choices?.[0]?.message?.content || "";
 
-    // Remove token-estimated word count footer
+    // Clean output & compute word count
     const contentOnly = fullText.replace(/Word count:\s*\d+\s*words?/i, "").trim();
     const stripped = contentOnly.replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ");
     const cleanWords = stripped.split(/\s+/).filter(Boolean);
