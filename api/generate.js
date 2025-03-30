@@ -14,31 +14,44 @@ export default async function handler(req, res) {
     "5**": { min: 730, max: 770 }
   };
 
+  const typeHints = {
+    "blog": "Use an engaging tone. Write as a student sharing your view on a blog. Include personal reflections and relatable experiences.",
+    "speech": "Begin with a greeting (e.g. 'Good morning everyone'), use inclusive and persuasive language, and end with a thank you.",
+    "letter to the editor": "Begin with 'Dear Editor', state your opinion clearly, support it with arguments and suggestions, and end with your name.",
+    "formal letter": "Use a respectful and structured tone. Include a salutation, body, and closing phrase (e.g. 'Yours faithfully').",
+    "proposal": "Use clear headings such as 'Introduction', 'Purpose', 'Details', and 'Conclusion'. Use a formal and objective tone.",
+    "article": "Use a semi-formal tone. Start with a catchy lead, elaborate with facts or arguments, and end with a thoughtful conclusion.",
+    "one-sided argumentative essay": "Argue strongly for one side only. Support each point clearly with explanations and real-life examples.",
+    "two-sided argumentative essay": "Present both sides of the issue fairly. Use one paragraph per side and conclude with your own opinion."
+  };
+
   const max_tokens = tokenLimits[level] || 1600;
   const minWords = wordLimits[level].min;
   const maxWords = wordLimits[level].max;
+  const extraTypeHint = typeHints[type] || "";
 
   const styleGuidelines = {
-    "5": `Write clearly and directly, using proper format and simple to intermediate vocabulary. The tone should be exam-appropriate, with safe sentence structures. Provide at least two concrete real-life examples that help explain your ideas. Examples can be basic or familiar to teenagers.`,
-    "5*": `Write fluently with clear structure and more varied vocabulary. Express emotion or persuasion naturally, using rhetorical questions or comparisons. Provide at least two thoughtful real-life examples or situations that support your points clearly and persuasively.`,
-    "5**": `Write with a mature tone, sophisticated structure, and precise vocabulary. Use rhetorical devices, transitions, and complex arguments. Provide three insightful real-life examples, such as from current events, societal trends, or real youth experiences. Make sure each example supports a clear, deep idea. Avoid sounding robotic or overly casual.`
+    "5": `Write clearly and directly with basic to intermediate vocabulary. Support your ideas with two real-life examples.`,
+    "5*": `Write fluently using varied vocabulary and sentence structures. Include rhetorical questions or persuasive techniques. Use at least two well-developed real-life examples.`,
+    "5**": `Use a sophisticated tone and precise vocabulary. Structure arguments logically and provide three real-life examples from society, education, or youth issues. Use rhetorical devices and transitions.`
   };
 
-  const prompt = `You are an HKDSE English Paper 2 examiner.
+  const prompt = \`You are an HKDSE English Paper 2 examiner.
 
 Task:
-Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.
+Write a \${type} on the topic: "\${topic}" that would be awarded Level \${level} in the HKDSE exam.
 
 Instructions:
-${styleGuidelines[level]}
+\${extraTypeHint}
+\${styleGuidelines[level]}
 
 IMPORTANT:
-- You MUST write between ${minWords} and ${maxWords} words.
-- You MUST count your words accurately (not tokens).
-- Do NOT count paragraph spacing or blank lines as words.
-- If the writing is outside the word range, revise and rewrite it before ending.
-- Do NOT say what level the writer is.
-- End with: Word count: ___ words`;
+- Structure the writing in at least 7 paragraphs.
+- You MUST write between \${minWords} and \${maxWords} words.
+- Count only real words (not punctuation or blank lines).
+- End with: Word count: ___ words
+- Do NOT say what level the student is writing at.
+\`;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
   const headers = {
@@ -71,7 +84,7 @@ IMPORTANT:
     const cleanWords = stripped.split(/\s+/).filter(Boolean);
     const actualWordCount = cleanWords.length;
 
-    const finalText = contentOnly + `\n\nWord count: ${actualWordCount} words`;
+    const finalText = contentOnly + `\n\nWord count: \${actualWordCount} words`;
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
