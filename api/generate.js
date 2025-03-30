@@ -9,12 +9,12 @@ export default async function handler(req, res) {
   };
 
   const wordTarget = {
-    "5": "> 750 words",
-    "5*": "> 800 words",
-    "5**": "> 850 words"
+    "5": "750 words",
+    "5*": "800 words",
+    "5**": "850 words"
   };
 
-  const max_tokens = tokenLimits[level] || 1000;
+  const max_tokens = tokenLimits[level] || 2300;
 
   const styleGuidelines = {
     "5": `Write like a capable HKDSE candidate. Use clear paragraphing, appropriate format, and intermediate vocabulary. Allow for minor awkward phrasing or repetition. Do not try to sound native or perfect. Maintain a polite, exam-appropriate tone.`,
