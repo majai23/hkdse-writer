@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HKDSE AI Writing Tool</title>
+  <title>HKDSE English Writing AI</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
     label { display: block; margin-top: 20px; font-weight: bold; }
@@ -84,7 +84,7 @@
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: prompt, type: "article", level })  // force article as base type for logic
+        body: JSON.stringify({ topic: prompt, type, level })
       });
 
       if (!response.ok) {
