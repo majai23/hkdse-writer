@@ -3,18 +3,20 @@ export default async function handler(req, res) {
   const { topic, type, level } = req.body;
 
   const tokenLimits = {
-    "5": 2000,
-    "5*": 2100,
-    "5**": 2300
+    "5": 1200,
+    "5*": 1250,
+    "5**": 1300
   };
 
-  const wordTarget = {
-    "5": "> 750 words",
-    "5*": "> 800 words",
-    "5**": "> 850 words"
+  const wordLimits = {
+    "5": { min: 650, max: 800 },
+    "5*": { min: 700, max: 850 },
+    "5**": { min: 750, max: 900 }
   };
 
-  const max_tokens = tokenLimits[level] || 2300;
+  const max_tokens = tokenLimits[level] || 1200;
+  const minWords = wordLimits[level].min;
+  const maxWords = wordLimits[level].max;
 
   const styleGuidelines = {
     "5": `Write like a capable HKDSE candidate. Use clear paragraphing, appropriate format, and intermediate vocabulary. Allow for minor awkward phrasing or repetition. Do not try to sound native or perfect. Maintain a polite, exam-appropriate tone.`,
@@ -27,10 +29,15 @@ export default async function handler(req, res) {
 Task:
 Write a ${type} on the topic: "${topic}" that would be awarded Level ${level} in the HKDSE exam.
 
-Style Instructions:
+Instructions:
 ${styleGuidelines[level]}
 
-Write approximately ${wordTarget[level]}. Do not say what level the writer is. End your writing with: Word count: ___ words`;
+IMPORTANT:
+- You MUST write between ${minWords} and ${maxWords} words.
+- You MUST count your words accurately (not tokens).
+- If the writing is outside the word range, revise and rewrite it before ending.
+- Do NOT say what level the writer is.
+- End with: Word count: ___ words`;
 
   const openaiUrl = "https://dsewriterai.openai.azure.com/openai/deployments/gpt35-dse/chat/completions?api-version=2025-01-01-preview";
   const headers = {
@@ -55,7 +62,6 @@ Write approximately ${wordTarget[level]}. Do not say what level the writer is. E
     const writingData = await writingRes.json();
     let fullText = writingData.choices?.[0]?.message?.content || "";
 
-    // Strip old word count and recalculate
     const contentOnly = fullText.replace(/Word count:\s*\d+\s*words?/i, "").trim();
     const stripped = contentOnly.replace(/[.,!?;:"'()\[\]{}<>\/\-]/g, " ");
     const cleanWords = stripped.split(/\s+/).filter(Boolean);
@@ -65,7 +71,7 @@ Write approximately ${wordTarget[level]}. Do not say what level the writer is. E
 
     res.status(200).json({ writing: finalText });
   } catch (err) {
-    console.error("Alignment error:", err);
-    res.status(500).json({ error: "Failed to generate aligned writing." });
+    console.error("Strict word control error:", err);
+    res.status(500).json({ error: "Failed to generate writing." });
   }
 }
