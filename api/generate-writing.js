@@ -18,9 +18,9 @@ module.exports = async function handler(req, res) {
   const { min, max } = limits[level];
 
   const styles = {
-    "5": `Write like a realistic Level 5 HKDSE student... Target ${min}–${max} words.`,
-    "5*": `Write like a confident Level 5* student... Target ${min}–${max} words.`,
-    "5**": `Write like a top Level 5** HKDSE candidate... Target ${min}–${max} words.`
+    "5": `Write like a realistic Level 5 HKDSE student. The tone should be natural and a little casual. Some awkward phrasing is fine. Grammar should be mostly accurate. Vocabulary should be simple to intermediate. Target ${min}–${max} words.`,
+    "5*": `Write like a confident Level 5* student. Use a formal tone and structured paragraphs. Vocabulary should be moderately rich. Target ${min}–${max} words.`,
+    "5**": `Write like a top Level 5** HKDSE candidate. Use mature, fluent language and rhetorical techniques. Vocabulary should be sophisticated. Target ${min}–${max} words.`
   };
 
   const writingPrompt = `You are an HKDSE English Paper 2 student.
@@ -85,52 +85,11 @@ Word count: ___ words
 
     writing += `\n\nWord count: ${wordCount} words${warning}`;
 
-    const feedbackPrompt = `You are a DSE English Paper 2 examiner.
-
-The following writing was generated to simulate a Level ${level} student's performance. Justify why it matches the band in the fixed format below. Then suggest improvements and revise it using better vocabulary.
-
----
-Content:
-[2–3 sentences about relevance, clarity, ideas, support]
-
-Language:
-[2–3 sentences about grammar, phrasing, vocabulary]
-
-Organisation:
-[2–3 sentences about paragraphing, coherence, transitions]
-
-Vocabulary Upgrade:
-- List 5 simple or vague phrases from the writing.
-- Suggest stronger, more precise vocabulary alternatives.
-- Briefly explain why they are better.
-
-Revised Version with Vocabulary Upgraded:
-- Rewrite the original passage using upgraded vocabulary where appropriate while keeping structure and ideas intact.
-
-Original Writing:
-${writing}`;
-
-    const feedbackRes = await fetch(openaiUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: "You are an HKDSE examiner and writing coach." },
-          { role: "user", content: feedbackPrompt }
-        ],
-        temperature: 0.6,
-        max_tokens: 900
-      })
-    });
-
-    const feedbackData = await feedbackRes.json();
-    const comment = feedbackData.choices?.[0]?.message?.content || "⚠️ No feedback returned. Please try again.";
-
-    res.status(200).json({ writing, comment });
+    res.status(200).json({ writing });
   } catch (err) {
     console.error("FULL API ERROR:", JSON.stringify(err, null, 2));
     res.status(500).json({
-      error: "Failed to generate writing or feedback.",
+      error: "Failed to generate writing.",
       details: err.message || err,
     });
   }
